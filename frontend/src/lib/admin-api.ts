@@ -62,6 +62,7 @@ export interface InventoryRow {
 export interface AdminChatConversation {
   id: string;
   customerName?: string;
+  customerPhone?: string;
   status: string;
   createdAt: string;
   updatedAt: string;

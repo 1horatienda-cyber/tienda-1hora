@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Search } from 'lucide-react';
 import { useCartStore } from '@/store/cart-store';
+import BrandLogos from './BrandLogos';
 
 export default function Navbar() {
   const totalItems = useCartStore((s) => s.totalItems());
@@ -14,8 +15,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-1hora.png" alt="1Hora" className="h-9 w-auto" />
+          <BrandLogos heightClass="h-8" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-700">

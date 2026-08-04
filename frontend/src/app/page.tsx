@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import ProductCard from '@/components/ProductCard';
 import HeroCarousel, { HeroSlide } from '@/components/HeroCarousel';
+import BrandLogos from '@/components/BrandLogos';
 
 export default async function HomePage() {
   const [featured, news, banners] = await Promise.all([
@@ -20,9 +21,8 @@ export default async function HomePage() {
       ) : (
         <section className="relative bg-brand text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-32 text-center">
-            <div className="bg-white rounded-2xl inline-block px-8 py-6">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/brand/logo-1hora.png" alt="1Hora" className="h-16 sm:h-20 w-auto mx-auto" />
+            <div className="bg-white rounded-2xl inline-flex px-8 py-6">
+              <BrandLogos heightClass="h-14 sm:h-16" />
             </div>
             <p className="mt-6 text-lg text-gray-300 max-w-xl mx-auto">
               Descubre nuestra colección. Pide en línea y coordina tu entrega por WhatsApp.

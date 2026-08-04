@@ -17,7 +17,14 @@ export interface Product {
   name: string;
   slug: string;
   description: string;
+  // Precio "al por mayor" (desde wholesaleMinQty unidades)
   priceInCents: number;
+  wholesaleMinQty: number;
+  // Precio "al detalle" (1-2 unidades)
+  retailPriceInCents: number | null;
+  // Precio y cantidad de la subcaja/caja completa (si el producto la tiene)
+  boxQuantity: number | null;
+  boxPriceInCents: number | null;
   sku: string;
   isFeatured: boolean;
   isNew: boolean;

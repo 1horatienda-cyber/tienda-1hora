@@ -17,7 +17,7 @@ const DELIVERY_LABELS: Record<DeliveryType, string> = {
 const STORE_WHATSAPP = '18298253309';
 
 export default function CartView() {
-  const { items, updateQuantity, removeItem, totalInCents, clear } = useCartStore();
+  const { items, updateQuantity, removeItem, totalInCents, unitPrice, clear } = useCartStore();
 
   const [form, setForm] = useState({
     customerName: '',
@@ -44,7 +44,7 @@ export default function CartView() {
     const lines = [
       '¡Hola! Quiero confirmar mi pedido' + (orderId ? ` #${orderId.slice(0, 8)}` : '') + ':',
       '',
-      ...items.map((i) => `• ${i.quantity}x ${i.name} — ${formatRD(i.priceInCents * i.quantity)}`),
+      ...items.map((i) => `• ${i.quantity}x ${i.name} — ${formatRD(unitPrice(i) * i.quantity)}`),
       '',
       `Total: ${formatRD(totalInCents())}`,
       `Entrega: ${DELIVERY_LABELS[form.deliveryType]}`,
@@ -104,7 +104,16 @@ export default function CartView() {
             </div>
             <div className="flex-1">
               <p className="font-medium">{item.name}</p>
-              <p className="text-sm text-brand-accent">{formatRD(item.priceInCents)}</p>
+              <p className="text-sm text-brand-accent">
+                {formatRD(unitPrice(item))} c/u
+                {item.quantity < item.wholesaleMinQty && (
+                  <span className="text-gray-400 font-normal">
+                    {' '}
+                    · compra {item.wholesaleMinQty}+ y paga {formatRD(item.priceInCents)} c/u
+                  </span>
+                )}
+              </p>
+              <p className="text-sm font-medium mt-0.5">{formatRD(unitPrice(item) * item.quantity)}</p>
             </div>
             <div className="flex items-center border border-gray-200 rounded-full">
               <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="w-8 h-8">−</button>

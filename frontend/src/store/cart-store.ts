@@ -1,13 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product } from '@/lib/types';
+import { unitPriceForQuantity } from '@/lib/pricing';
 
 export interface CartItem {
   productId: string;
   name: string;
-  priceInCents: number;
   quantity: number;
   imageUrl?: string;
+  // Se guardan los 3 niveles de precio del producto para poder recalcular el precio
+  // por unidad en vivo cada vez que cambia la cantidad en el carrito.
+  retailPriceInCents: number | null;
+  priceInCents: number; // precio "por mayor" (desde wholesaleMinQty)
+  wholesaleMinQty: number;
+  boxQuantity: number | null;
+  boxPriceInCents: number | null;
 }
 
 interface CartState {
@@ -16,6 +23,7 @@ interface CartState {
   updateQuantity: (productId: string, quantity: number) => void;
   removeItem: (productId: string) => void;
   clear: () => void;
+  unitPrice: (item: CartItem) => number;
   totalInCents: () => number;
   totalItems: () => number;
 }
@@ -34,9 +42,13 @@ export const useCartStore = create<CartState>()(
           items.push({
             productId: product.id,
             name: product.name,
-            priceInCents: product.priceInCents,
             quantity,
             imageUrl: product.images?.[0]?.url,
+            retailPriceInCents: product.retailPriceInCents,
+            priceInCents: product.priceInCents,
+            wholesaleMinQty: product.wholesaleMinQty,
+            boxQuantity: product.boxQuantity,
+            boxPriceInCents: product.boxPriceInCents,
           });
         }
         set({ items });
@@ -58,7 +70,10 @@ export const useCartStore = create<CartState>()(
 
       clear: () => set({ items: [] }),
 
-      totalInCents: () => get().items.reduce((sum, i) => sum + i.priceInCents * i.quantity, 0),
+      // Precio por unidad según la cantidad actual de esa línea (detalle / por mayor / caja)
+      unitPrice: (item) => unitPriceForQuantity(item, item.quantity),
+
+      totalInCents: () => get().items.reduce((sum, i) => sum + get().unitPrice(i) * i.quantity, 0),
       totalItems: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),
     { name: 'tienda-cart' },

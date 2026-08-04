@@ -9,6 +9,12 @@ interface Props {
   product?: Product; // si viene, es edición; si no, es creación
 }
 
+function suggestRetail(wholesaleRD: number): number {
+  if (!wholesaleRD) return 0;
+  const step = wholesaleRD >= 1000 ? 50 : wholesaleRD >= 200 ? 10 : 5;
+  return Math.ceil((wholesaleRD * 1.3) / step) * step;
+}
+
 export default function AdminProductForm({ product }: Props) {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -17,17 +23,33 @@ export default function AdminProductForm({ product }: Props) {
     name: product?.name || '',
     description: product?.description || '',
     price: product ? (product.priceInCents / 100).toString() : '',
+    wholesaleMinQty: product ? product.wholesaleMinQty.toString() : '3',
+    retailPrice: product?.retailPriceInCents ? (product.retailPriceInCents / 100).toString() : '',
+    boxQuantity: product?.boxQuantity ? product.boxQuantity.toString() : '',
+    boxPrice: product?.boxPriceInCents ? (product.boxPriceInCents / 100).toString() : '',
     sku: product?.sku || '',
     categoryId: product?.category?.id || '',
     isFeatured: product?.isFeatured || false,
     isNew: product?.isNew || false,
   });
+  const [retailTouched, setRetailTouched] = useState(!!product?.retailPriceInCents);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     adminApi.getCategories().then(setCategories).catch(() => {});
   }, []);
+
+  // Mientras el admin no haya tocado el precio al detalle a mano, se sugiere solo
+  // en base al precio por mayor (igual que hace el backend al crear un producto).
+  useEffect(() => {
+    if (retailTouched) return;
+    const wholesale = parseFloat(form.price);
+    if (!Number.isNaN(wholesale) && wholesale > 0) {
+      setForm((f) => ({ ...f, retailPrice: suggestRetail(wholesale).toString() }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.price, retailTouched]);
 
   async function handleAddCategory() {
     if (!newCategory.trim()) return;
@@ -46,6 +68,10 @@ export default function AdminProductForm({ product }: Props) {
         name: form.name,
         description: form.description,
         priceInCents: Math.round(parseFloat(form.price) * 100),
+        wholesaleMinQty: parseInt(form.wholesaleMinQty, 10) || 3,
+        retailPriceInCents: form.retailPrice ? Math.round(parseFloat(form.retailPrice) * 100) : undefined,
+        boxQuantity: form.boxQuantity ? parseInt(form.boxQuantity, 10) : undefined,
+        boxPriceInCents: form.boxPrice ? Math.round(parseFloat(form.boxPrice) * 100) : undefined,
         sku: form.sku,
         categoryId: form.categoryId || undefined,
         isFeatured: form.isFeatured,
@@ -66,7 +92,7 @@ export default function AdminProductForm({ product }: Props) {
 
   async function handleDelete() {
     if (!product) return;
-    if (!confirm(`¿Desactivar "${product.name}"? Podrás reactivarlo después.`)) return;
+    if (!confirm(`¿Eliminar "${product.name}" definitivamente? Esta acción no se puede deshacer.`)) return;
     await adminApi.deleteProduct(product.id);
     router.push('/admin/productos');
   }
@@ -94,27 +120,89 @@ export default function AdminProductForm({ product }: Props) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="text-sm font-medium text-gray-700">Código (SKU)</label>
+        <input
+          value={form.sku}
+          onChange={(e) => setForm({ ...form, sku: e.target.value })}
+          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+          required
+        />
+      </div>
+
+      <div className="border border-gray-200 rounded-xl p-4 space-y-4">
+        <p className="text-sm font-semibold">Precios por cantidad</p>
+        <p className="text-xs text-gray-400 -mt-2">
+          Se aplican solos en la tienda según cuántas unidades compre el cliente.
+        </p>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600">Precio al detalle (RD$)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.retailPrice}
+              onChange={(e) => {
+                setRetailTouched(true);
+                setForm({ ...form, retailPrice: e.target.value });
+              }}
+              placeholder="Sugerido automáticamente"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+            />
+            <p className="text-xs text-gray-400 mt-1">Para 1 a {(parseInt(form.wholesaleMinQty, 10) || 3) - 1} unidades</p>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Precio por mayor (RD$)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+              required
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="text-sm font-medium text-gray-700">Precio (RD$)</label>
+          <label className="text-xs font-medium text-gray-600">Cantidad mínima para el precio por mayor</label>
           <input
             type="number"
-            step="0.01"
-            min="0"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+            min="2"
+            value={form.wholesaleMinQty}
+            onChange={(e) => setForm({ ...form, wholesaleMinQty: e.target.value })}
+            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1 max-w-[140px]"
             required
           />
         </div>
-        <div>
-          <label className="text-sm font-medium text-gray-700">Código (SKU)</label>
-          <input
-            value={form.sku}
-            onChange={(e) => setForm({ ...form, sku: e.target.value })}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
-            required
-          />
+
+        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+          <div>
+            <label className="text-xs font-medium text-gray-600">Unidades por caja (opcional)</label>
+            <input
+              type="number"
+              min="1"
+              value={form.boxQuantity}
+              onChange={(e) => setForm({ ...form, boxQuantity: e.target.value })}
+              placeholder="Ej: 50"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600">Precio de la caja completa (RD$)</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0"
+              value={form.boxPrice}
+              onChange={(e) => setForm({ ...form, boxPrice: e.target.value })}
+              placeholder="Ej: 4750"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm mt-1"
+            />
+          </div>
         </div>
       </div>
 
@@ -184,7 +272,7 @@ export default function AdminProductForm({ product }: Props) {
         </button>
         {product && (
           <button type="button" onClick={handleDelete} className="text-sm text-red-500 hover:underline">
-            Desactivar producto
+            Eliminar producto
           </button>
         )}
       </div>

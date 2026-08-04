@@ -33,7 +33,12 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-4">
         <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
-        <p className="mt-1 text-sm font-semibold text-brand-accent">{formatRD(product.priceInCents)}</p>
+        <p className="mt-1 text-sm font-semibold text-brand-accent">
+          {formatRD(product.retailPriceInCents ?? product.priceInCents)}
+        </p>
+        <p className="text-xs text-gray-400">
+          Por mayor ({product.wholesaleMinQty}+): {formatRD(product.priceInCents)}
+        </p>
       </div>
     </Link>
   );

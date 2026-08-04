@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import BrandLogos from './BrandLogos';
 
 export default function Footer() {
   return (
@@ -6,8 +7,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm">
         <div>
           <div className="bg-white rounded-lg inline-block px-3 py-2 mb-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/logo-1hora.png" alt="1Hora" className="h-7 w-auto" />
+            <BrandLogos heightClass="h-6" />
           </div>
           <p>Catálogo online. Pedidos por retiro en tienda, envío a tu negocio o a domicilio.</p>
         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { adminApi, AdminChatConversation } from '@/lib/admin-api';
 import { ChatMessage } from '@/lib/types';
 import RequirePermission from '@/components/RequirePermission';
+import { MessageCircle } from 'lucide-react';
 
 const CONVERSATIONS_POLL_MS = 5000;
 const MESSAGES_POLL_MS = 4000;
@@ -85,12 +86,18 @@ export default function AdminMensajesPage() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium text-sm truncate">{c.customerName || 'Visitante'}</span>
-                  {c.unreadCount > 0 && (
-                    <span className="text-[10px] bg-brand-accent text-white rounded-full w-5 h-5 shrink-0 flex items-center justify-center">
-                      {c.unreadCount}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {c.status === 'cerrada' && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-500">Cerrada</span>
+                    )}
+                    {c.unreadCount > 0 && (
+                      <span className="text-[10px] bg-brand-accent text-white rounded-full w-5 h-5 flex items-center justify-center">
+                        {c.unreadCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
+                {c.customerPhone && <p className="text-xs text-gray-400 mt-0.5">{c.customerPhone}</p>}
                 <p className="text-xs text-gray-400 truncate mt-0.5">{c.lastMessage || 'Sin mensajes'}</p>
               </button>
             ))
@@ -102,8 +109,24 @@ export default function AdminMensajesPage() {
             <p className="text-gray-400 text-sm m-auto">Selecciona una conversación para responder</p>
           ) : (
             <>
-              <div className="px-4 py-3 border-b border-gray-100 font-medium text-sm shrink-0">
-                {activeConversation?.customerName || 'Visitante'}
+              <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between gap-2 shrink-0">
+                <div>
+                  <p className="font-medium text-sm">{activeConversation?.customerName || 'Visitante'}</p>
+                  {activeConversation?.customerPhone && (
+                    <p className="text-xs text-gray-400">{activeConversation.customerPhone}</p>
+                  )}
+                </div>
+                {activeConversation?.customerPhone && (
+                  <a
+                    href={`https://wa.me/${activeConversation.customerPhone.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded-full hover:bg-green-100 transition-colors"
+                  >
+                    <MessageCircle size={14} />
+                    WhatsApp
+                  </a>
+                )}
               </div>
 
               <div className="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50">
