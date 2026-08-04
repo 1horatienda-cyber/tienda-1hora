@@ -9,14 +9,14 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 // Se siembran una sola vez, la primera vez que arranca el backend con la tabla vacía;
 // después de eso todo se administra desde /admin/banners.
 const INITIAL_BANNERS: { imageUrl: string; href: string; order: number }[] = [
-  { imageUrl: '/banners/banner-1.jpg', href: '/catalogo?category=cables', order: 0 },
-  { imageUrl: '/banners/banner-2.jpg', href: '/catalogo?category=cargadores-30w-65w-carga-rapida', order: 1 },
-  { imageUrl: '/banners/banner-3.jpg', href: '/catalogo?category=bocinas-bluetooth', order: 2 },
-  { imageUrl: '/banners/banner-4.jpg', href: '/catalogo', order: 3 },
-  { imageUrl: '/banners/banner-5.jpg', href: '/catalogo?category=power-bank', order: 4 },
-  { imageUrl: '/banners/banner-6.jpg', href: '/catalogo?category=cables', order: 5 },
-  { imageUrl: '/banners/banner-7.jpg', href: '/catalogo?category=bocinas-bluetooth', order: 6 },
-  { imageUrl: '/banners/banner-8.jpg', href: '/catalogo?category=audifonos-bluetooth', order: 7 },
+  { imageUrl: '/banners/banner-1.png', href: '/catalogo?category=cables', order: 0 },
+  { imageUrl: '/banners/banner-2.png', href: '/catalogo?category=cargadores-30w-65w-carga-rapida', order: 1 },
+  { imageUrl: '/banners/banner-3.png', href: '/catalogo?category=bocinas-bluetooth', order: 2 },
+  { imageUrl: '/banners/banner-4.png', href: '/catalogo', order: 3 },
+  { imageUrl: '/banners/banner-5.png', href: '/catalogo?category=power-bank', order: 4 },
+  { imageUrl: '/banners/banner-6.png', href: '/catalogo?category=cables', order: 5 },
+  { imageUrl: '/banners/banner-7.png', href: '/catalogo?category=bocinas-bluetooth', order: 6 },
+  { imageUrl: '/banners/banner-8.png', href: '/catalogo?category=audifonos-bluetooth', order: 7 },
 ];
 
 @Injectable()

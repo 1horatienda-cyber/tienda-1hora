@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { ChatConversation } from './entities/chat-conversation.entity';
+import { ChatConversation, ChatConversationStatus } from './entities/chat-conversation.entity';
 import { ChatMessage, ChatSender } from './entities/chat-message.entity';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 
@@ -32,6 +32,7 @@ export class ChatService {
   async createConversation(dto: CreateConversationDto) {
     const conversation = this.conversationsRepo.create({
       customerName: dto.customerName,
+      customerPhone: dto.customerPhone,
       customerToken: randomUUID(),
     });
     return this.conversationsRepo.save(conversation);
@@ -57,6 +58,14 @@ export class ChatService {
     return messages;
   }
 
+  async closeConversation(conversationId: string, customerToken: string) {
+    const conversation = await this.findConversationOrThrow(conversationId);
+    this.assertOwnsConversation(conversation, customerToken);
+    conversation.status = ChatConversationStatus.CERRADA;
+    await this.conversationsRepo.save(conversation);
+    return { ok: true };
+  }
+
   // --- Panel admin ---
 
   async findAllForAdmin() {
@@ -74,6 +83,7 @@ export class ChatService {
         return {
           id: conversation.id,
           customerName: conversation.customerName,
+          customerPhone: conversation.customerPhone,
           status: conversation.status,
           createdAt: conversation.createdAt,
           updatedAt: conversation.updatedAt,

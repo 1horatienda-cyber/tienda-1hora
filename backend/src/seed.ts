@@ -4,6 +4,8 @@ import { Category } from './modules/categories/entities/category.entity';
 import { Product } from './modules/products/entities/product.entity';
 import { ProductImage } from './modules/products/entities/product-image.entity';
 import { Inventory } from './modules/inventory/entities/inventory.entity';
+import { CATALOG_PRICING } from './catalog-pricing';
+import { suggestRetailPriceInCents } from './modules/products/pricing.util';
 
 dotenv.config();
 
@@ -177,6 +179,9 @@ async function seed() {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    // Necesario para conectarse desde afuera a bases de datos como la de Render
+    // (la propia app, en la misma red interna, no lo necesita). Activar con DB_SSL=true.
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     entities: [Category, Product, ProductImage, Inventory],
     synchronize: false, // las tablas ya deben existir (levanta el backend al menos una vez antes de sembrar)
   });
@@ -213,12 +218,22 @@ async function seed() {
         ? `${item.description} (Precio estimado: el catálogo original no traía precio al detalle para este producto — ajústalo en seed.ts.)`
         : item.description;
 
+      // Cantidad mínima por mayor, subcaja y precio al detalle: vienen de catalog-pricing.ts
+      // (mismos datos reales del catálogo que usa update-pricing.ts). Si por algún motivo
+      // un SKU no está ahí, se usan valores por defecto razonables.
+      const pricing = CATALOG_PRICING.find((p) => p.sku === item.sku);
+      const wholesaleInCents = item.price * 100;
+
       const product = await productRepo.save(
         productRepo.create({
           name: item.name,
           slug,
           description,
-          priceInCents: item.price * 100,
+          priceInCents: wholesaleInCents,
+          wholesaleMinQty: pricing?.minQty ?? 3,
+          retailPriceInCents: suggestRetailPriceInCents(wholesaleInCents),
+          boxQuantity: pricing?.boxQty ?? null,
+          boxPriceInCents: pricing?.box ? pricing.box * 100 : null,
           sku: item.sku,
           categoryId: category.id,
           isFeatured: !!item.isFeatured,

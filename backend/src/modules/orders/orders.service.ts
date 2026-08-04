@@ -7,6 +7,7 @@ import { Product } from '../products/entities/product.entity';
 import { Inventory } from '../inventory/entities/inventory.entity';
 import { InventoryMovement, MovementType } from '../inventory/entities/inventory-movement.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { unitPriceForQuantity } from '../products/pricing.util';
 
 @Injectable()
 export class OrdersService {
@@ -60,14 +61,17 @@ export class OrdersService {
           }),
         );
 
-        const subtotal = product.priceInCents * item.quantity;
+        // Precio por unidad según la cantidad comprada: detalle (1-2), por mayor (desde
+        // wholesaleMinQty) o de caja (si la cantidad alcanza para una caja completa).
+        const unitPriceInCents = unitPriceForQuantity(product, item.quantity);
+        const subtotal = unitPriceInCents * item.quantity;
         totalInCents += subtotal;
 
         orderItems.push({
           productId: product.id,
           productName: product.name,
           quantity: item.quantity,
-          unitPriceInCents: product.priceInCents,
+          unitPriceInCents,
           subtotalInCents: subtotal,
         });
       }

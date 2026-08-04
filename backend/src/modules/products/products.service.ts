@@ -5,6 +5,7 @@ import { Product } from './entities/product.entity';
 import { Inventory } from '../inventory/entities/inventory.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { suggestRetailPriceInCents } from './pricing.util';
 
 @Injectable()
 export class ProductsService {
@@ -80,6 +81,8 @@ export class ProductsService {
     const product = this.productsRepo.create({
       ...dto,
       slug: this.slugify(dto.name),
+      wholesaleMinQty: dto.wholesaleMinQty ?? 3,
+      retailPriceInCents: dto.retailPriceInCents ?? suggestRetailPriceInCents(dto.priceInCents),
     });
     const saved = await this.productsRepo.save(product);
 

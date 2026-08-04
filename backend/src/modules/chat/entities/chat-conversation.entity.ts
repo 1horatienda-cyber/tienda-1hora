@@ -13,6 +13,9 @@ export class ChatConversation {
   @Column({ nullable: true })
   customerName: string;
 
+  @Column({ nullable: true })
+  customerPhone: string;
+
   // Token que el navegador del cliente guarda (localStorage) para poder
   // enviar y leer mensajes de su conversación sin necesidad de una cuenta.
   @Column({ unique: true })

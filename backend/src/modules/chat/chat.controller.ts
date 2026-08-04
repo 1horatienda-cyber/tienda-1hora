@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { AdminSendMessageDto } from './dto/admin-send-message.dto';
+import { CloseConversationDto } from './dto/close-conversation.dto';
 import { AdminAuthGuard } from '../auth/auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
@@ -26,6 +27,13 @@ export class ChatController {
   @Get('conversations/:id/messages')
   getMessages(@Param('id') id: string, @Query('customerToken') customerToken?: string) {
     return this.service.getMessagesForCustomer(id, customerToken);
+  }
+
+  // El cliente termina su conversación desde el widget (botón "Finalizar chat").
+  // Al volver a abrir el chat, se le pide nombre y teléfono de nuevo y arranca una conversación nueva.
+  @Patch('conversations/:id/close')
+  closeConversation(@Param('id') id: string, @Body() dto: CloseConversationDto) {
+    return this.service.closeConversation(id, dto.customerToken);
   }
 
   // --- Panel admin ---

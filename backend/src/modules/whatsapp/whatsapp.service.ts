@@ -23,6 +23,15 @@ export class WhatsappService {
     return this.numbersRepo.find({ relations: ['operators'], order: { createdAt: 'ASC' } });
   }
 
+  // Público: solo lo mínimo para mostrar en la página de Contacto (sin operadores ni estado interno).
+  async findPublic() {
+    const numbers = await this.numbersRepo.find({
+      where: { isActive: true },
+      order: { isPrimary: 'DESC', createdAt: 'ASC' },
+    });
+    return numbers.map((n) => ({ phoneNumber: n.phoneNumber, label: n.label, isPrimary: n.isPrimary }));
+  }
+
   async findOne(id: string) {
     const number = await this.numbersRepo.findOne({ where: { id }, relations: ['operators'] });
     if (!number) throw new NotFoundException('Número no encontrado');
