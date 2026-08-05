@@ -32,6 +32,8 @@ const STEPS = [
   { icon: Truck, title: 'Confirma por WhatsApp', text: 'Elige retiro, envío a tu negocio o a domicilio, y coordina directo con nosotros.' },
 ];
 
+export const dynamic = 'force-dynamic';
+
 export default async function MarcaPage() {
   const products = await api.getProducts().catch(() => []);
   const gallery = products.filter((p) => p.images?.[0]?.url).slice(0, 6);

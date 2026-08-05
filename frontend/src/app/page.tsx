@@ -4,6 +4,13 @@ import ProductCard from '@/components/ProductCard';
 import HeroCarousel, { HeroSlide } from '@/components/HeroCarousel';
 import BrandLogos from '@/components/BrandLogos';
 
+// La portada no tiene parámetros dinámicos (a diferencia de /catalogo, que sí),
+// así que sin esto Next.js podía intentar generarla como página estática en el
+// momento de compilar en Vercel — y si el backend no respondía a tiempo en ese
+// momento, esa versión vacía quedaba fija para siempre. Esto obliga a que
+// siempre se pidan los datos frescos en cada visita.
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const [featured, news, banners] = await Promise.all([
     api.getProducts({ featured: true }).catch(() => []),

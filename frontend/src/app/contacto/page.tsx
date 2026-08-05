@@ -8,6 +8,8 @@ function formatPhone(phone: string) {
   return `${local.slice(0, 3)}-${local.slice(3, 6)}-${local.slice(6)}`;
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function ContactoPage() {
   const [config, numbers] = await Promise.all([
     api.getStoreConfig().catch(() => null),
