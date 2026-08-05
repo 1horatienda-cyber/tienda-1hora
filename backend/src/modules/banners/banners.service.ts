@@ -8,15 +8,19 @@ import { UpdateBannerDto } from './dto/update-banner.dto';
 // Banners con los que arrancó la tienda (los que ya estaban puestos en el carrusel).
 // Se siembran una sola vez, la primera vez que arranca el backend con la tabla vacía;
 // después de eso todo se administra desde /admin/banners.
+// Nota: estos banners son diseños horizontales (no traen una versión vertical dedicada),
+// así que imageUrlMobile queda vacío a propósito — en el celular se usa esta misma imagen
+// completa (sin recortar) para no perder el título, precio ni productos relacionados.
+// El día que tengan un diseño vertical (1080x1350) para alguno, se sube desde /admin/banners.
 const INITIAL_BANNERS: { imageUrl: string; href: string; order: number }[] = [
-  { imageUrl: '/banners/banner-1.png', href: '/catalogo?category=cables', order: 0 },
-  { imageUrl: '/banners/banner-2.png', href: '/catalogo?category=cargadores-30w-65w-carga-rapida', order: 1 },
-  { imageUrl: '/banners/banner-3.png', href: '/catalogo?category=bocinas-bluetooth', order: 2 },
-  { imageUrl: '/banners/banner-4.png', href: '/catalogo', order: 3 },
-  { imageUrl: '/banners/banner-5.png', href: '/catalogo?category=power-bank', order: 4 },
-  { imageUrl: '/banners/banner-6.png', href: '/catalogo?category=cables', order: 5 },
-  { imageUrl: '/banners/banner-7.png', href: '/catalogo?category=bocinas-bluetooth', order: 6 },
-  { imageUrl: '/banners/banner-8.png', href: '/catalogo?category=audifonos-bluetooth', order: 7 },
+  { imageUrl: '/banners/banner-1-desktop.webp', href: '/catalogo?category=cables', order: 0 },
+  { imageUrl: '/banners/banner-2-desktop.webp', href: '/catalogo?category=cargadores-30w-65w-carga-rapida', order: 1 },
+  { imageUrl: '/banners/banner-3-desktop.webp', href: '/catalogo?category=bocinas-bluetooth', order: 2 },
+  { imageUrl: '/banners/banner-4-desktop.webp', href: '/catalogo', order: 3 },
+  { imageUrl: '/banners/banner-5-desktop.webp', href: '/catalogo?category=power-bank', order: 4 },
+  { imageUrl: '/banners/banner-6-desktop.webp', href: '/catalogo?category=cables', order: 5 },
+  { imageUrl: '/banners/banner-7-desktop.webp', href: '/catalogo?category=bocinas-bluetooth', order: 6 },
+  { imageUrl: '/banners/banner-8-desktop.webp', href: '/catalogo?category=audifonos-bluetooth', order: 7 },
 ];
 
 @Injectable()
@@ -48,7 +52,12 @@ export class BannersService implements OnModuleInit {
       const last = await this.bannersRepo.find({ order: { order: 'DESC' }, take: 1 });
       order = (last[0]?.order ?? -1) + 1;
     }
-    const banner = this.bannersRepo.create({ imageUrl: dto.imageUrl, href: dto.href || '/catalogo', order });
+    const banner = this.bannersRepo.create({
+      imageUrl: dto.imageUrl,
+      imageUrlMobile: dto.imageUrlMobile || null,
+      href: dto.href || '/catalogo',
+      order,
+    });
     return this.bannersRepo.save(banner);
   }
 
@@ -56,6 +65,8 @@ export class BannersService implements OnModuleInit {
     const banner = await this.bannersRepo.findOne({ where: { id } });
     if (!banner) throw new NotFoundException('Banner no encontrado');
     Object.assign(banner, dto);
+    // Un valor vacío en imageUrlMobile significa "quitar la versión móvil" (volver al fallback)
+    if (dto.imageUrlMobile !== undefined && !dto.imageUrlMobile) banner.imageUrlMobile = null;
     return this.bannersRepo.save(banner);
   }
 

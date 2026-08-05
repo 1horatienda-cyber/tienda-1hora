@@ -10,6 +10,11 @@ export class UpdateBannerDto {
   @IsOptional()
   @IsString()
   @MaxLength(300)
+  imageUrlMobile?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
   href?: string;
 
   @IsOptional()

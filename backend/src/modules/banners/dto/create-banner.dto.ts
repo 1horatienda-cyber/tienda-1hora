@@ -9,6 +9,11 @@ export class CreateBannerDto {
   @IsOptional()
   @IsString()
   @MaxLength(300)
+  imageUrlMobile?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
   href?: string;
 
   @IsOptional()

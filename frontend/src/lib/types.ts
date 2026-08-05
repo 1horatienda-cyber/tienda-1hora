@@ -38,6 +38,7 @@ export interface Product {
 export interface Banner {
   id: string;
   imageUrl: string;
+  imageUrlMobile: string | null;
   href: string;
   isActive: boolean;
   order: number;

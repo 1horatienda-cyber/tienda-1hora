@@ -11,7 +11,12 @@ export default async function HomePage() {
     api.getBanners().catch(() => []),
   ]);
 
-  const heroSlides: HeroSlide[] = banners.map((b) => ({ id: b.id, imageUrl: b.imageUrl, href: b.href }));
+  const heroSlides: HeroSlide[] = banners.map((b) => ({
+    id: b.id,
+    imageUrl: b.imageUrl,
+    imageUrlMobile: b.imageUrlMobile,
+    href: b.href,
+  }));
 
   return (
     <div>

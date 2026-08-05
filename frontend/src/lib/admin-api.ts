@@ -228,9 +228,11 @@ export const adminApi = {
 
   // --- Banners ---
   getBannersAdmin: () => request<Banner[]>('/banners/admin'),
-  createBanner: (data: { imageUrl: string; href?: string; order?: number }) =>
+  createBanner: (data: { imageUrl: string; imageUrlMobile?: string; href?: string; order?: number }) =>
     request<Banner>('/banners', { method: 'POST', body: JSON.stringify(data) }),
-  updateBanner: (id: string, data: Partial<{ imageUrl: string; href: string; isActive: boolean; order: number }>) =>
-    request<Banner>(`/banners/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  updateBanner: (
+    id: string,
+    data: Partial<{ imageUrl: string; imageUrlMobile: string; href: string; isActive: boolean; order: number }>,
+  ) => request<Banner>(`/banners/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   deleteBanner: (id: string) => request(`/banners/${id}`, { method: 'DELETE' }),
 };

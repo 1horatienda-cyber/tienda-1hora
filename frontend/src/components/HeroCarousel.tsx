@@ -2,11 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface HeroSlide {
   id: string;
   imageUrl: string;
+  // Recorte vertical dedicado (1080x1350). Si no viene, en el celular se usa la
+  // imagen de escritorio completa y sin recortar, solo achicada al ancho de pantalla.
+  imageUrlMobile?: string | null;
   href: string;
   // Opcionales: solo se usan si la imagen del banner no trae ya su propio texto/diseño.
   title?: string;
@@ -16,6 +20,13 @@ export interface HeroSlide {
 
 const AUTOPLAY_MS = 5000;
 const SWIPE_THRESHOLD_PX = 40;
+
+// Zona segura: el banner ocupa todo el ancho, con el mismo contenido visible
+// completo en cualquier tamaño (nunca se corta texto ni elementos importantes).
+// Nota: Tailwind necesita ver las clases completas y literales en el archivo (no
+// armadas por partes con interpolación), por eso van escritas enteras acá.
+const DESKTOP_ONLY_CLASSES = 'aspect-[1920/960]'; // 2:1 en todos los tamaños (no hay imagen móvil dedicada)
+const RESPONSIVE_CLASSES = 'aspect-[1080/1350] sm:aspect-[1920/960]'; // vertical en celular, 2:1 desde tablet
 
 export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const [index, setIndex] = useState(0);
@@ -56,22 +67,42 @@ export default function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
-        {slides.map((slide) => (
-          <Link key={slide.id} href={slide.href} className="relative w-full shrink-0 aspect-[2/1]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={slide.imageUrl}
-              alt={slide.alt || slide.title || 'Promoción'}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            {slide.title && (
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center text-white px-4">
-                <h2 className="text-2xl sm:text-5xl font-semibold tracking-tight">{slide.title}</h2>
-                {slide.subtitle && <p className="mt-2 text-sm sm:text-lg text-gray-200">{slide.subtitle}</p>}
-              </div>
-            )}
-          </Link>
-        ))}
+        {slides.map((slide, i) => {
+          const hasMobile = !!slide.imageUrlMobile;
+          const alt = slide.alt || slide.title || 'Promoción';
+          return (
+            <Link
+              key={slide.id}
+              href={slide.href}
+              className={`relative w-full shrink-0 ${hasMobile ? RESPONSIVE_CLASSES : DESKTOP_ONLY_CLASSES}`}
+            >
+              {hasMobile && (
+                <Image
+                  src={slide.imageUrlMobile!}
+                  alt={alt}
+                  fill
+                  sizes="100vw"
+                  priority={i === 0}
+                  className="object-cover object-center sm:hidden"
+                />
+              )}
+              <Image
+                src={slide.imageUrl}
+                alt={alt}
+                fill
+                sizes="100vw"
+                priority={i === 0}
+                className={`object-cover object-center ${hasMobile ? 'hidden sm:block' : ''}`}
+              />
+              {slide.title && (
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-center text-white px-6 sm:px-12">
+                  <h2 className="text-2xl sm:text-5xl font-semibold tracking-tight">{slide.title}</h2>
+                  {slide.subtitle && <p className="mt-2 text-sm sm:text-lg text-gray-200">{slide.subtitle}</p>}
+                </div>
+              )}
+            </Link>
+          );
+        })}
       </div>
 
       {slides.length > 1 && (
